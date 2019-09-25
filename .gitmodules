@@ -1,0 +1,3 @@
+[submodule "scintilla-for-kronotope"]
+	path = scintilla-for-kronotope
+	url = https://github.com/dejbug/scintilla-for-kronotope
