@@ -4,6 +4,8 @@ I've been nervous lately, looking for a job and expecting having to move to Colo
 
 I have one of those MMORPG mouses, with the little keypad by the thumb with 12 programmable keys. I've set two of those to VK_BROWSER_BACK and VK_BROWSER_FORWARD. SciTE doesn't handle these but they would be perfect for switching buffers, so that was a feature I was really missing but could quickly add.
 
+# What was optimized ?
+
 Skimming the source got me to the `ParseKeyCode` function which looked perfectly readable but therefore really slow. For example:
 
 ```c++
@@ -35,27 +37,42 @@ instead of
 
 Given that the possible input was a finite list, it was easy to drastically minimize the number of comparisons.
 
-The only **downside** (curiously also a feature) is that the sped-up version doesn't strictly fail on invalid input. Thi is because it doesn't do an exact match but checks only the unique prefixes. Concretely, this means that their behaviors differ __given erroneous input__ (only). I guess another way of putting it, if I were a salesperson, is that the sped-up version will "just work" whereas the original would "degrade" into a no-op?
+# A caveat
 
-# Correctness test
+The only **downside** (curiously also a feature) is that the sped-up version doesn't strictly fail on invalid input. This is because it doesn't do an exact match but checks only the unique prefixes. Concretely, this means that their behaviors differ __given erroneous input__ (only). I guess another way of putting it, if I were a salesperson, is that the sped-up version will "just work" whereas the original would "degrade" into a no-op?
+
+# Demo
+
+## Correctness test
 
 Just `make run`.
 
-# Speed test
+## Speed test
 
-Do `make PROFILE=1`.
+Do `make run SPEEDTEST=3`.
 
 Possible output:
 ```
-g++ -o main.o -c main.cpp -std=c++17 -pg -DTEST_SPEED
-g++ -o main.exe main.o ParseKeyCodeEmpty.o ParseKeyCode.o ParseKeyCodeFast.o ParseKeyCodeRegex.o -std=c++17 -pg -DTEST_SPEED
+g++ -o main.o -c main.cpp -std=c++17 -Os -DSPEEDTEST
+g++ -o ParseKeyCodeEmpty.o -c ParseKeyCodeEmpty.cpp -std=c++17 -Os -DSPEEDTEST
+g++ -o ParseKeyCode.o -c ParseKeyCode.cpp -std=c++17 -Os -DSPEEDTEST
+g++ -o ParseKeyCodeFast.o -c ParseKeyCodeFast.cpp -std=c++17 -Os -DSPEEDTEST
+g++ -o main.exe main.o ParseKeyCodeEmpty.o ParseKeyCode.o ParseKeyCodeFast.o -std=c++17 -Os -DSPEEDTEST
 ParseKeyCodeEmpty 0
-ParseKeyCodeFast  20
-ParseKeyCode      1040
-ParseKeyCodeFast is 36.1379 times faster.
-gprof main.exe >main.stats
-BFD: Dwarf Error: Could not find abbrev number 108.
+ParseKeyCodeFast  16
+ParseKeyCode      260
+ParseKeyCodeFast is 16.25 times faster.
 ```
+
+### Note
+
+The speedup factor may reach up to 30 (or an insane 50 once or twice) if `-gp` is added (for use in `gprof`), which will inject profiling logic into the code. One would have thought that all functions would be encumbered equally, so the factor would stay valid, but either that is not so or something really interesting is going on with caching. Try `make profile SPEEDTEST=1` (a `run` is implicit in `profile`).
+
+## Usage
+
+There are three speed tests. `SPEEDTEST=1` doesn't optimize, `SPEEDTEST=2` does max optimization, and `SPEEDTEST=3` does the (size-) optimization used in the default SciTE build.
+
+`make coverage` (implies `profile`) and `make profile` (implies `run`) are possible to trigger `gcov/gprof` and `gprof` respectively.
 
 # TODO
 

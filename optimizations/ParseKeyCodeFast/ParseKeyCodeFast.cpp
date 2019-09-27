@@ -3,39 +3,16 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-/*
-A -> Alt+
-B -> Back
-C -> Ctrl+
-De -> Delete
-Do -> Down
-Es -> Escape
-End -> End
-Ent -> Enter
-F ->
-	o -> Forward
-	\# -> F1..F24
-H -> Home
-I -> Insert
-K -> Keypad
-	P -> Plus
-	Mi -> Minus
-	Mu -> Multiply
-	Di -> Divide
-	De -> Decimal
-L -> Left
-M -> Menu
-P -> Page
-	D -> Down
-	U -> Up
-R -> Right
-Sh -> Shift+
-Sp -> Space
-T -> Tab
-U -> Up
-V -> \# -> V1..V32767
-W -> Win
-*/
+namespace SA {
+	enum class KeyMod {
+		Norm = 0,
+		Shift = 1,
+		Ctrl = 2,
+		Alt = 4,
+		Super = 8,
+		Meta = 16,
+	};
+}
 
 template<size_t N>
 bool skip(char const *& s) {
@@ -45,22 +22,22 @@ bool skip(char const *& s) {
 };
 
 template<>
-bool skip<3u>(char const *& s) {
+inline bool skip<3u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s);
 };
 
 template<>
-bool skip<4u>(char const *& s) {
+inline bool skip<4u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s);
 };
 
 template<>
-bool skip<5u>(char const *& s) {
+inline bool skip<5u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s) && *(++s);
 };
 
 template<>
-bool skip<6u>(char const *& s) {
+inline bool skip<6u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s) && *(++s) && *(++s);
 };
 
@@ -68,36 +45,24 @@ long ParseKeyCodeFast(const char *s) {
 	if (!s || !*s) return 0;
 	if (!s[1]) return VkKeyScan(*s) & 0xff;
 
-	static constexpr const size_t Shift = 0x10000;
-	static constexpr const size_t Ctrl = 0x20000;
-	static constexpr const size_t Alt = 0x40000;
-	// static constexpr const size_t Super = 0x80000;
-	// static constexpr const size_t Meta = 0x160000;
+	long mods = 0;
 
-	int mods = 0;
-
-	// auto skip = [&s](size_t n) -> bool {
-	// 	for (; *s && n;  ++s, --n);
-	// 	return !!*s;
-	// };
-
-	if ('C'==*s || 'c'==*s) { // Can only be 'Ctrl+'.
-		if (skip<4>(s) && '+'==*s) mods |= Ctrl, ++s;
-		else return 0;
+	if ('C'==*s || 'c'==*s) { // 'Ctrl+' or 'C'(+garbage).
+		if (skip<4>(s) && '+'==*s++)
+			mods |= (static_cast<long>(SA::KeyMod::Ctrl) << 16);
+		else return VkKeyScan('c');
 	}
 
-	if ('S'==*s || 's'==*s) { // 'Shift' or 'Space' ?
-		if ('h'==s[1]) {
-			if (skip<5>(s) && '+'==*s) mods |= Shift, ++s;
-			else return 0;
-		}
-		else if ('p'==s[1])
-			return mods | VK_SPACE;
+	if ('S'==*s || 's'==*s) { // 'Shift', 'Space'.
+		if (skip<5>(s) && '+'==*s++)
+			mods |= (static_cast<long>(SA::KeyMod::Shift) << 16);
+		else return mods | VK_SPACE;
 	}
 
-	if ('A'==*s || 'a'==*s) { // Only 'Alt+'
-		if (skip<3>(s) && '+'==*s) mods |= Alt, ++s;
-		else return 0;
+	if ('A'==*s || 'a'==*s) { // 'Alt+' or 'A'(+garbage).
+		if (skip<3>(s) && '+'==*s++)
+			mods |= (static_cast<long>(SA::KeyMod::Alt) << 16);
+		else return mods | VkKeyScan('a');
 	}
 
 	if (!s[1]) return mods | (VkKeyScan(*s) & 0xff);
@@ -117,23 +82,23 @@ long ParseKeyCodeFast(const char *s) {
 		return mods | (std::atoi(&s[1]) & 0x7FFF);
 
 	if ('P'==*s || 'p'==*s) { // 'PageUp' or 'PageDown' ?
-		if (!skip<4>(s)) return 0;
+		if (!skip<4>(s)) return mods | VkKeyScan('p');
 		if ('U'==*s || 'u'==*s) return mods | VK_PRIOR;
 		if ('D'==*s || 'd'==*s) return mods | VK_NEXT;
-		return 0;
+		return mods | VkKeyScan('p');
 	}
 
 	if ('D'==*s || 'd'==*s) { // 'Delete' or 'Down' ?
 		if ('e'==s[1]) return mods | VK_DELETE;
 		if ('o'==s[1]) return mods | VK_DOWN;
-		return 0;
+		return mods | VkKeyScan('d');
 	}
 
 	if ('F'==*s || 'f'==*s) { // 'Forward' or 'F1'-'F24' ?
 		if ('o'==s[1]) return mods | VK_BROWSER_FORWARD;
 		const int i = std::atoi(&s[1]);
-		if (i < 1) return 0;
-		return mods | VK_F1 + ((i-1) % 24);
+		if (i < 1) return mods | VkKeyScan('f');
+		return mods | (VK_F1 + ((i-1) % 24));
 	}
 
 	if ('E'==*s || 'e'==*s) { // 'Escape', 'Enter', or 'End' ?
@@ -142,22 +107,24 @@ long ParseKeyCodeFast(const char *s) {
 			if ('t'==s[2]) return mods | VK_RETURN;
 			if ('d'==s[2]) return mods | VK_END;
 		}
-		return 0;
+		return mods | VkKeyScan('e');
 	}
 
 	// 'Keypad...' is the only option left.
-	if (!skip<6>(s)) return 0;
+	if (!('K'==*s || 'k'==*s)) return mods | (VkKeyScan(*s) & 0xff);
+	if (!skip<6>(s)) return mods | VkKeyScan('k');
 	if ('P'==*s || 'p'==*s) return mods | VK_ADD;
 	if ('D'==*s || 'd'==*s) {
 		if ('e'==s[1]) return mods | VK_DECIMAL;
 		if ('i'==s[1]) return mods | VK_DIVIDE;
-		return 0;
 	}
-	if ('M'==*s || 'm'==*s) {
+	else if ('M'==*s || 'm'==*s) {
 		if ('i'==s[1]) return mods | VK_SUBTRACT;
 		if ('u'==s[1]) return mods | VK_MULTIPLY;
-		// return 0;
 	}
-	return 0;
+	else {
+		const int i = std::atoi(s);
+		if (i >= 0) return mods | (VK_NUMPAD0 + (i % 9));
+	}
+	return mods | VkKeyScan('k');
 }
-

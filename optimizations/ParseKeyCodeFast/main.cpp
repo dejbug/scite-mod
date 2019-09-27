@@ -38,9 +38,14 @@ static Map const keys{
 	{"Insert", VK_INSERT}, {"End", VK_END}, {"Home", VK_HOME},
 	{"Enter", VK_RETURN}, {"Space", VK_SPACE}, {"Tab", VK_TAB},
 	{"KeypadPlus", VK_ADD}, {"KeypadMinus", VK_SUBTRACT},
-	{"KeypadMultiply", VK_MULTIPLY}, {"KeypadDivide", VK_DIVIDE}, {"KeypadDecimal", VK_DECIMAL}, {"Escape", VK_ESCAPE},
+	{"KeypadMultiply", VK_MULTIPLY}, {"KeypadDivide", VK_DIVIDE},
+	{"KeypadDecimal", VK_DECIMAL}, {"Escape", VK_ESCAPE},
 	{"Delete", VK_DELETE}, {"PageUp", VK_PRIOR}, {"PageDown", VK_NEXT},
-	{"Win", VK_LWIN}, {"#", VkKeyScan('#')}, {"F24", VK_F24}, {"V4711", 4711}
+	{"Win", VK_LWIN}, {"#", VkKeyScan('#')}, {"F24", VK_F24}, {"V4711", 4711},
+	{"A", VkKeyScan('a')}, {"Backward", VK_BROWSER_BACK},
+	{"Agrabargh", VkKeyScan('a')}, {"KeypadZulu", VK_NUMPAD0},
+	{"Keypad8", VK_NUMPAD8}, {"PageLeft", VkKeyScan('p')},
+	{"Return", VK_RIGHT}, {"slartibardfast", VK_SPACE},
 };
 
 Item prependModifierToKey(Item const & k, Item const & m) {
@@ -56,8 +61,8 @@ void print(Item const & k, Item const & m, TestFunction f) {
 	long const val = f(x.first.c_str());
 	char const tick = x.second == val ? 'x' : ' ';
 	std::cout.fill('0');
-	std::cout << std::hex << std::setw(8) << val
-		<< " == " << std::setw(8) << x.second
+	std::cout << std::hex << std::setw(8) << x.second
+		<< " == " << std::setw(8) << val
 		<< " [" << tick << ']'
 		<< " | " << x.first
 		<< std::endl;
@@ -115,12 +120,12 @@ void testCorrectness() {
 	// std::cout << "\nParseKeyCode\n\n";
 	// print(ParseKeyCode);
 
-	std::cout << "\nParseKeyCodeFast\n\n";
+	std::cout << "\nParseKeyCodeFast\n\nexpected == parsed   [match]\n\n";
 	print(ParseKeyCodeFast);
 }
 
 int main() {
-#ifdef TEST_SPEED
+#ifdef SPEEDTEST
 	testSpeed();
 #else
 	testCorrectness();

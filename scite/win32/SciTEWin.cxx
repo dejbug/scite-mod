@@ -50,69 +50,62 @@ static GUI::gui_string GetErrorMessage(DWORD nRet) {
 }
 
 // Used by (the new) ParseKeyCode.
+
 template<size_t N>
 bool skip(char const *& s) {
 	char const * const end = s + N;
 	while (*s && s<end) ++s;
 	return !!*s;
-}
+};
 
 template<>
-bool skip<3u>(char const *& s) {
+inline bool skip<3u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s);
-}
+};
 
 template<>
-bool skip<4u>(char const *& s) {
+inline bool skip<4u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s);
-}
+};
 
 template<>
-bool skip<5u>(char const *& s) {
+inline bool skip<5u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s) && *(++s);
-}
+};
 
 template<>
-bool skip<6u>(char const *& s) {
+inline bool skip<6u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s) && *(++s) && *(++s);
-}
+};
 
-// New version is 30 times (!) faster, but will
-// match some erroneous input since it only compares unique
-// prefixes and not entire strings. The new and old version
-// are equivalent on correct input.
-long SciTEKeys::ParseKeyCode(const char *s) {
+// New version is 15x (with -Os, 6x with -O3) faster, but
+// will match some erroneous input since it only compares
+// unique prefixes and not entire strings. The new and old
+// version are equivalent on correct input though.
+// FIXME: NEEDS MORE TESTING!
+
+long SciTEKeys::ParseKeyCodeFast(const char *s) {
 	if (!s || !*s) return 0;
 	if (!s[1]) return VkKeyScan(*s) & 0xff;
 
 	long mods = 0;
 
-	if ('C'==*s || 'c'==*s) { // Can only be 'Ctrl+'.
-		if (skip<4>(s) && '+'==*s) {
+	if ('C'==*s || 'c'==*s) { // 'Ctrl+' or 'C'(+garbage).
+		if (skip<4>(s) && '+'==*s++)
 			mods |= (static_cast<long>(SA::KeyMod::Ctrl) << 16);
-			++s;
-		}
-		else return 0;
+		else return VkKeyScan('c');
 	}
 
-	if ('S'==*s || 's'==*s) { // 'Shift' or 'Space' ?
-		if ('h'==s[1]) {
-			if (skip<5>(s) && '+'==*s) {
-				mods |= (static_cast<long>(SA::KeyMod::Shift) << 16);
-				++s;
-			}
-			else return 0;
-		}
-		else if ('p'==s[1])
-			return mods | VK_SPACE;
+	if ('S'==*s || 's'==*s) { // 'Shift', 'Space'.
+		if (skip<5>(s) && '+'==*s++)
+			mods |= (static_cast<long>(SA::KeyMod::Shift) << 16);
+		else return mods | VK_SPACE;
 	}
 
-	if ('A'==*s || 'a'==*s) { // Only 'Alt+'
-		if (skip<3>(s) && '+'==*s) {
+	if ('A'==*s || 'a'==*s) { // 'Alt+' or 'A'(+garbage).
+		if (skip<3>(s) && '+'==*s++)
 			mods |= (static_cast<long>(SA::KeyMod::Alt) << 16);
-			++s;
-		}
-		else return 0;
+		else return mods | VkKeyScan('a');
 	}
 
 	if (!s[1]) return mods | (VkKeyScan(*s) & 0xff);
@@ -132,22 +125,22 @@ long SciTEKeys::ParseKeyCode(const char *s) {
 		return mods | (std::atoi(&s[1]) & 0x7FFF);
 
 	if ('P'==*s || 'p'==*s) { // 'PageUp' or 'PageDown' ?
-		if (!skip<4>(s)) return 0;
+		if (!skip<4>(s)) return mods | VkKeyScan('p');
 		if ('U'==*s || 'u'==*s) return mods | VK_PRIOR;
 		if ('D'==*s || 'd'==*s) return mods | VK_NEXT;
-		return 0;
+		return mods | VkKeyScan('p');
 	}
 
 	if ('D'==*s || 'd'==*s) { // 'Delete' or 'Down' ?
 		if ('e'==s[1]) return mods | VK_DELETE;
 		if ('o'==s[1]) return mods | VK_DOWN;
-		return 0;
+		return mods | VkKeyScan('d');
 	}
 
 	if ('F'==*s || 'f'==*s) { // 'Forward' or 'F1'-'F24' ?
 		if ('o'==s[1]) return mods | VK_BROWSER_FORWARD;
 		const int i = std::atoi(&s[1]);
-		if (i < 1) return 0;
+		if (i < 1) return mods | VkKeyScan('f');
 		return mods | (VK_F1 + ((i-1) % 24));
 	}
 
@@ -157,24 +150,26 @@ long SciTEKeys::ParseKeyCode(const char *s) {
 			if ('t'==s[2]) return mods | VK_RETURN;
 			if ('d'==s[2]) return mods | VK_END;
 		}
-		return 0;
+		return mods | VkKeyScan('e');
 	}
 
 	// 'Keypad...' is the only option left.
-	if (!skip<6>(s)) return 0;
+	if (!('K'==*s || 'k'==*s)) return mods | (VkKeyScan(*s) & 0xff);
+	if (!skip<6>(s)) return mods | VkKeyScan('k');
 	if ('P'==*s || 'p'==*s) return mods | VK_ADD;
 	if ('D'==*s || 'd'==*s) {
 		if ('e'==s[1]) return mods | VK_DECIMAL;
 		if ('i'==s[1]) return mods | VK_DIVIDE;
-		return 0;
 	}
-	if ('M'==*s || 'm'==*s) {
+	else if ('M'==*s || 'm'==*s) {
 		if ('i'==s[1]) return mods | VK_SUBTRACT;
 		if ('u'==s[1]) return mods | VK_MULTIPLY;
-		// return 0;
 	}
-
-	return 0;
+	else {
+		const int i = std::atoi(s);
+		if (i >= 0) return mods | (VK_NUMPAD0 + (i % 9));
+	}
+	return mods | VkKeyScan('k');
 }
 
 bool SciTEKeys::MatchKeyCode(long parsedKeyCode, int keyval, int modifiers) noexcept {
