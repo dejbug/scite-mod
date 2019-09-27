@@ -4,6 +4,8 @@
 # This makefile assumes the mingw32 version of GCC 4.x is used and changes will
 # be needed to use other compilers.
 
+SCI_DIR=../../scintilla-for-kronotope/scintilla
+
 .SUFFIXES: .cxx .properties
 WINDRES ?= windres
 ifeq (\,$(shell echo \\))
@@ -53,9 +55,9 @@ PROG	= ../bin/SciTE.exe
 PROGSTATIC = ../bin/Sc1.exe
 WIDEFLAGS=-DUNICODE -D_UNICODE
 
-vpath %.h ../src ../../scintilla/include
+vpath %.h ../src $(SCI_DIR)/include
 vpath %.cxx ../src
-vpath %.a ../../scintilla/bin
+vpath %.a $(SCI_DIR)/bin
 
 ifndef NO_LUA
 LUA_CORE_OBJS = lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
@@ -76,7 +78,7 @@ else
 LUA_DEFINES = -DNO_LUA
 endif
 
-INCLUDEDIRS=-I ../../scintilla/include -I ../src $(LUA_INCLUDES)
+INCLUDEDIRS=-I $(SCI_DIR)/include -I ../src $(LUA_INCLUDES)
 RCINCLUDEDIRS=--include-dir ../src
 
 CBASEFLAGS = -Wall $(INCLUDEDIRS) $(LUA_DEFINES) $(WIDEFLAGS) $(VERSION_DEFINES) $(CLANG_OPTS)
@@ -154,7 +156,7 @@ analyze:
 depend deps.mak:
 	python AppDepGen.py
 
-../bin/%.dll:	../../scintilla/bin/%.dll
+../bin/%.dll:	$(SCI_DIR)/bin/%.dll
 ifneq (sh,$(SHELL_TYPE))
 	$(COPY) $(subst /,\, $< $(@D))
 else

@@ -125,6 +125,10 @@ long SciTEKeys::ParseKeyCode(const char *mnemonic) {
 				keyval = VK_LWIN;
 			} else if (sKey == "Menu") {
 				keyval = VK_APPS;
+			} else if (sKey == "Backward") {
+				keyval = VK_BROWSER_BACK;
+			} else if (sKey == "Forward") {
+				keyval = VK_BROWSER_FORWARD;
 			}
 		}
 	}
@@ -1953,6 +1957,19 @@ LRESULT SciTEWin::WndProc(UINT iMessage, WPARAM wParam, LPARAM lParam) {
 
 		case WM_KEYUP:
 			return KeyUp(wParam);
+
+		case WM_APPCOMMAND: {
+			short const cmd = GET_APPCOMMAND_LPARAM(lParam);
+			// WORD const dev = GET_DEVICE_LPARAM(lParam);
+			// UINT const key = GET_KEYSTATE_LPARAM(lParam);
+
+			switch (cmd) {
+				default: return ::DefWindowProcW(MainHWND(), iMessage, wParam, lParam);
+				case APPCOMMAND_BROWSER_BACKWARD: return KeyDown(VK_BROWSER_BACK);
+				case APPCOMMAND_BROWSER_FORWARD: return KeyDown(VK_BROWSER_FORWARD);
+			}
+			return TRUE;
+		}
 
 		case WM_SIZE:
 			if (wParam != SIZE_MINIMIZED)
