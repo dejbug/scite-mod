@@ -63,11 +63,11 @@ The parser is hard-coded. A parser-generator would be nice.
 
 # Why bother ?
 
-Look at where and how `ParseKeyCode` is used, it's in `SciTEWin::KeyDown` (via `KeyMatch`). So it runs at each and every key press. And SciTE is a text editor app. And then you see it called inside loops.
+Look at where and how `ParseKeyCode` is used, it's in `SciTEWin::KeyDown` (via `KeyMatch`). So it runs at each and every key press. And SciTE is a text editor! And then you see it called inside loops.
 
 ```
-	for (const ShortcutItem &scut : shortCutItemList) {
-		if (KeyMatch(scut.menuKey, static_cast<int>(wParam), modifiers)) {
+	for (unsigned int j = 0; j < languageMenu.size(); j++) {
+		if (KeyMatch(languageMenu[j].menuKey, keyVal, modifierAsInt)) {
 ```
 
 and later
@@ -75,6 +75,14 @@ and later
 ```
 	for (const ShortcutItem &scut : shortCutItemList) {
 		if (KeyMatch(scut.menuKey, static_cast<int>(wParam), modifiers)) {
+```
+
+and also (via `MatchKeyCode`)
+
+```
+	for (int tool = 0; tool < toolMax; ++tool) {
+		//...
+			if (SciTEKeys::MatchKeyCode(static_cast<long>(mii.dwItemData), keyVal, modifierAsInt)) {
 ```
 
 The best way would be to translate the string labels into integer identifiers once at the start of the app. I guess the reasoning is that it wouldn't work if the user somehow (for some reason) change those strings. But even then, you would simply update the lookup table at each such change. I need to loock into this. It may turn out that my optimization here will have been unnecessary, as they often are ;). 
