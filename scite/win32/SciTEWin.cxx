@@ -56,27 +56,27 @@ bool skip(char const *& s) {
 	char const * const end = s + N;
 	while (*s && s<end) ++s;
 	return !!*s;
-};
+}
 
 template<>
 inline bool skip<3u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s);
-};
+}
 
 template<>
 inline bool skip<4u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s);
-};
+}
 
 template<>
 inline bool skip<5u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s) && *(++s);
-};
+}
 
 template<>
 inline bool skip<6u>(char const *& s) {
 	return *s && *(++s) && *(++s) && *(++s) && *(++s) && *(++s) && *(++s);
-};
+}
 
 // New version is 15x (with -Os, 6x with -O3) faster, but
 // will match some erroneous input since it only compares
@@ -84,7 +84,7 @@ inline bool skip<6u>(char const *& s) {
 // version are equivalent on correct input though.
 // FIXME: NEEDS MORE TESTING!
 
-long SciTEKeys::ParseKeyCodeFast(const char *s) {
+long SciTEKeys::ParseKeyCode(const char *s) {
 	if (!s || !*s) return 0;
 	if (!s[1]) return VkKeyScan(*s) & 0xff;
 
