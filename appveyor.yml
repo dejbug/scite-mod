@@ -12,7 +12,7 @@ cache:
 install:
   - cmd: SET APPVEYOR_SAVE_CACHE_ON_ERROR=true
   - cmd: curl -kL -o i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/8.1.0/threads-posix/dwarf/i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z/download
-  - cmd: 7z x -o C:\projects\i686-8.1.0-release-posix-dwarf-rt_v6-rev0  i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
+  - cmd: 7z x -oC:\projects\i686-8.1.0-release-posix-dwarf-rt_v6-rev0  i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
   - cmd: SET PATH=C:\projects\i686-8.1.0-release-posix-dwarf-rt_v6-rev0\mingw32\bin;%PATH%
 
 before_build:
