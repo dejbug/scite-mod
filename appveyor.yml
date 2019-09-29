@@ -14,6 +14,8 @@ before_build:
   - cmd: 7z --help | head -3
 
 build_script:
+  - cmd: git submodule init
+  - cmd: git submodule update
   - cmd: mingw32-make -j1 --keep-going
 
 after_build:
