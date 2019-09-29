@@ -5,13 +5,11 @@
 # be needed to use other compilers.
 
 OS=Windows_NT
+SHELL_TYPE=cmd
 SCI_DIR=../../scintilla-for-kronotope/scintilla
 
 .SUFFIXES: .cxx .properties
 WINDRES ?= windres
-ifeq (\,$(shell echo \\))
-	SHELL_TYPE = sh
-endif
 
 ifdef CLANG
 CXX = clang++
@@ -30,7 +28,7 @@ ifeq ($(OS),Windows_NT)
 		CC = gcc
 	endif
 	DEL = del
-	COPY = xcopy /Y
+	COPY = copy
 	VER = cmd /c ver
 	# Discover Windows version by running 'VER' command and parsing output
 	# For Windows 2000 looks like:Microsoft Windows 2000 [Version 5.00.2195]
