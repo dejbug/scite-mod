@@ -4,11 +4,19 @@ skip_tags: true
 test: off
 max_jobs: 1
 
+cache:
+  - C:\ProgramData\chocolatey\bin
+  - C:\ProgramData\chocolatey\lib
+
 install:
-  - cmd: SET MINGW_DIR=C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1
-  - cmd: SET PATH=%MINGW_DIR%\mingw32\bin;%PATH%
+  - cmd: SET APPVEYOR_SAVE_CACHE_ON_ERROR=true
+  - cmd: choco install mingw
+  - cmd: SET PATH=C:\ProgramData\chocolatey\bin;%PATH%
 
 before_build:
+  - cmd: dir C:\ProgramData\chocolatey\bin
+  - cmd: dir C:\ProgramData\chocolatey\lib
+  - cmd: dir C:\ProgramData\chocolatey\lib\mingw32
   - cmd: mingw32-make --version | head -1
   - cmd: g++ --version | head -1
   - cmd: 7z --help | head -3
