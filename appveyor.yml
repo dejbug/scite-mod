@@ -23,7 +23,7 @@ after_build:
   - cmd: cd deploy
   - cmd: COPY ..\README.md .
   - cmd: COPY ..\LICENSE .
-  - cmd: 7z a ..\$(appveyor_project_name)-$(appveyor_build_number).7z .
+  - cmd: 7z a ..\$(appveyor_project_name)-$(appveyor_build_version).7z .
 
 artifacts:
   - path: $(appveyor_project_name)-$(appveyor_build_version).7z
