@@ -5,22 +5,16 @@ test: off
 max_jobs: 1
 
 cache:
-  # - C:\ProgramData\chocolatey\bin
-  # - C:\ProgramData\chocolatey\lib
   - C:\projects\i686-8.1.0-release-posix-dwarf-rt_v6-rev0
 
 install:
-  - cmd: SET APPVEYOR_SAVE_CACHE_ON_ERROR=true
-  - cmd: curl -V
-  # - cmd: curl -kL -o i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/8.1.0/threads-posix/dwarf/i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z/download
-  - cmd: curl -kLO dejbug.de/pub/i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
-  - cmd: 7z x -oC:\projects\i686-8.1.0-release-posix-dwarf-rt_v6-rev0  i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
   - cmd: SET PATH=C:\projects\i686-8.1.0-release-posix-dwarf-rt_v6-rev0\mingw32\bin;%PATH%
 
 before_build:
+  - cmd: VER
   - cmd: mingw32-make --version | head -1
   - cmd: g++ --version | head -1
-  - cmd: 7z --help | head -3
+  - cmd: 7z --help | head -2
 
 build_script:
   - cmd: git submodule init

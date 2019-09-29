@@ -4,6 +4,7 @@
 # This makefile assumes the mingw32 version of GCC 4.x is used and changes will
 # be needed to use other compilers.
 
+OS=Windows_NT
 SCI_DIR=../../scintilla-for-kronotope/scintilla
 
 .SUFFIXES: .cxx .properties
@@ -28,8 +29,8 @@ ifeq ($(OS),Windows_NT)
 	ifndef CLANG
 		CC = gcc
 	endif
-	DEL = $(if $(wildcard $(dir $(SHELL))rm.exe), $(dir $(SHELL))rm.exe -f, del)
-	COPY = $(if $(wildcard $(dir $(SHELL))cp.exe), $(dir $(SHELL))cp.exe -a, xcopy /Y)
+	DEL = del
+	COPY = xcopy /Y
 	VER = cmd /c ver
 	# Discover Windows version by running 'VER' command and parsing output
 	# For Windows 2000 looks like:Microsoft Windows 2000 [Version 5.00.2195]
@@ -158,7 +159,7 @@ depend deps.mak:
 
 ../bin/%.dll:	$(SCI_DIR)/bin/%.dll
 ifneq (sh,$(SHELL_TYPE))
-	$(COPY) $(subst /,\, $< $(@D))
+	$(COPY) $(subst /,\,$< $(@D))
 else
 	$(COPY) $^ $(@D)
 endif
