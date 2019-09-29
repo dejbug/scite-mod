@@ -23,6 +23,9 @@ after_build:
   - cmd: cd deploy
   - cmd: COPY ..\README.md .
   - cmd: COPY ..\LICENSE .
+  - cmd: COPY ..\scite\bin\*.exe .
+  - cmd: COPY ..\scite\bin\*.dll .
+  - cmd: COPY ..\scite\bin\*.properties .
   - cmd: 7z a ..\$(appveyor_project_name)-$(appveyor_build_version).7z .
 
 artifacts:
