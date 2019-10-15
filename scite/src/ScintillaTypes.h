@@ -444,6 +444,14 @@ enum class LineEndType {
 	Unicode = 1,
 };
 
+enum class FingerScrollMode {
+	Disabled = 0,
+	ActiveBit = 1,
+	StrictBit = 2,
+	Active = 1,
+	Strict = 3,
+};
+
 enum class TypeProperty {
 	Boolean = 0,
 	Integer = 1,

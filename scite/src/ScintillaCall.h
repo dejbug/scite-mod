@@ -725,6 +725,8 @@ public:
 	void SetRepresentation(const char *encodedCharacter, const char *representation);
 	int Representation(const char *encodedCharacter, char *representation);
 	void ClearRepresentation(const char *encodedCharacter);
+	void SetFingerScrollMode(API::FingerScrollMode fingerScrollMode);
+	API::FingerScrollMode FingerScrollMode();
 	void StartRecord();
 	void StopRecord();
 	void SetLexer(int lexer);

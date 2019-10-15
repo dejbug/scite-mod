@@ -691,6 +691,8 @@ enum class Message {
 	SetRepresentation = 2665,
 	GetRepresentation = 2666,
 	ClearRepresentation = 2667,
+	SetFingerScrollMode = 2724,
+	GetFingerScrollMode = 2725,
 	StartRecord = 3001,
 	StopRecord = 3002,
 	SetLexer = 4001,

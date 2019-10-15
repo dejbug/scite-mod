@@ -2836,6 +2836,14 @@ void ScintillaCall::ClearRepresentation(const char *encodedCharacter) {
 	Call(Message::ClearRepresentation, reinterpret_cast<uintptr_t>(encodedCharacter));
 }
 
+void ScintillaCall::SetFingerScrollMode(API::FingerScrollMode fingerScrollMode) {
+	Call(Message::SetFingerScrollMode, static_cast<uintptr_t>(fingerScrollMode));
+}
+
+FingerScrollMode ScintillaCall::FingerScrollMode() {
+	return static_cast<API::FingerScrollMode>(Call(Message::GetFingerScrollMode));
+}
+
 void ScintillaCall::StartRecord() {
 	Call(Message::StartRecord);
 }

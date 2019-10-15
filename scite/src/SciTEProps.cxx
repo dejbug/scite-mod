@@ -1698,6 +1698,8 @@ void SciTEBase::ReadPropertiesInitial() {
 	props.Set("SciteDefaultHome", homepath.AsUTF8().c_str());
 	homepath = GetSciteUserHome();
 	props.Set("SciteUserHome", homepath.AsUTF8().c_str());
+
+	wEditor.SetFingerScrollMode(static_cast<Scintilla::API::FingerScrollMode>(props.GetInt("view.fingerscroll")));
 }
 
 FilePath SciTEBase::GetDefaultPropertiesFileName() {
